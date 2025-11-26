@@ -1,12 +1,45 @@
 ---
-title: "p8105_hw6_ab6168"
+title: "Homework 6"
 author: "Angelica Bailey"
 date: "2025-11-26"
 output: github_document
 ---
 
-```{r setup, include=FALSE}
-
+```{r}
+library(tidyverse)
+library(broom)
 ```
+
+
+## Problem 1
+
+Reading in data
+```{r}
+homicide_data = read_csv("data/homicide-data.csv")
+```
+
+Data cleaning
+```{r}
+homicide_data = homicide_data |> 
+  #creating city_state variable and binary variable for solved/unsolved homicides
+  mutate(city_state = str_c(city, ", ", state), 
+         homicide_solved = if_else(disposition == "Closed by arrest", 1, 0)    
+         ) |> 
+  #filtering states and race
+  filter(!city_state %in% c("Dallas, TX",
+                            "Phoenix, AZ",
+                            "Kansas City, MO",
+                            "Tulsa, AL"),
+         victim_race %in% c("White", "Black")) |> 
+  #victim age as numeric
+  mutate(victim_age = suppressWarnings(as.numeric(victim_age)))
+```
+
+
+
+
+
+
+
 
 
