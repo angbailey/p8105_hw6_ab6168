@@ -36,8 +36,49 @@ homicide_data = homicide_data |>
 ```
 
 
+Fitting logistic regression for Baltimore, MD
+```{r}
+baltimore_data = homicide_data |> 
+  filter(city_state == "Baltimore, MD")
+
+baltimore_fit = glm(
+  homicide_solved ~ victim_age + victim_sex + victim_race,
+  data = baltimore_data,
+  family = binomial(link = "logit")
+)
+
+# tidy model with adjusted odds ratio
+tidy_fit = tidy(baltimore_fit, exponentiate = TRUE, conf.int = TRUE)
+
+#extracting OR for victim sex
+tidy_fit |> 
+  filter(term == "victim_sexMale")
+```
 
 
+Iterating for all cities
+```{r, warning=FALSE}
+city_or_results = homicide_data |> 
+  group_by(city_state) |> 
+  nest() |> 
+  #fitting logistic model for each city
+  mutate(
+    model = map(data, ~ glm(
+      homicide_solved ~ victim_age + victim_sex + victim_race,
+      data = .x,
+      family = binomial
+    )),
+    #extracting OR
+    results = map(model, ~ tidy(
+      .x,
+      exponentiate = TRUE,
+      conf.int = TRUE
+    ))
+  ) |> 
+  unnest(results) |> 
+  filter(term == "victim_sexMale") |> 
+  select(city_state, estimate, conf.low, conf.high)
+```
 
 
 
