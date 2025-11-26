@@ -1,0 +1,12 @@
+---
+title: "p8105_hw6_ab6168"
+author: "Angelica Bailey"
+date: "2025-11-26"
+output: github_document
+---
+
+```{r setup, include=FALSE}
+
+```
+
+
