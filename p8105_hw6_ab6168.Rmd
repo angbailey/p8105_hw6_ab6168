@@ -81,6 +81,25 @@ city_or_results = homicide_data |>
 ```
 
 
+Creating plot
+```{r}
+city_or_results = city_or_results |> 
+  #reordering cities by OR
+  mutate(city_state = fct_reorder(city_state, estimate))
+
+ggplot(city_or_results, 
+       aes(x = estimate, 
+           y = city_state)) +
+  geom_point(color = "darkgreen") +
+  geom_errorbarh(aes(xmin = conf.low, xmax = conf.high), color = "darkseagreen4", height = 0.2) +
+  geom_vline(xintercept = 1, linetype = "dashed") +
+  labs(
+    title = "Adjusted Odds Ratios for Solving Homicides (Male vs Female Victims)",
+    x = "Odds Ratio (Male vs Female)",
+    y = "City"
+  ) +
+  theme_minimal(base_size = 12)
+```
 
 
 
