@@ -208,6 +208,17 @@ bwt_data = bwt_data |>
 ```
 
 
+Regression Model:
+I'm starting a model based on hypothesized structure for the factors that underly birthweight. I'm including potential biological predictors. 
+```{r}
+model_bwt = 
+  lm(bwt ~ bhead + blength + gaweeks + wtgain + smoken +
+    momage + mheight + fincome + mrace,
+  data = bwt_data
+)
+summary(model_bwt)
+```
+
 
 
 
