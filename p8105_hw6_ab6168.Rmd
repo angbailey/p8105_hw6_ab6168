@@ -5,7 +5,7 @@ date: "2025-11-26"
 output: github_document
 ---
 
-```{r}
+```{r,message=FALSE}
 library(tidyverse)
 library(modelr)
 library(broom)
@@ -15,7 +15,7 @@ library(broom)
 
 Reading in data
 
-```{r}
+```{r,message=FALSE}
 homicide_data = read_csv("data/homicide-data.csv")
 ```
 
@@ -109,7 +109,7 @@ The plot shows variation across cities in the adjusted odds ratio. In most citie
 
 ## Problem 2
 
-```{r}
+```{r,message=FALSE}
 library(p8105.datasets)
 data("weather_df")
 ```
@@ -185,9 +185,27 @@ bootstrap_results |>
 ```
 
 
+## Problem 3
+
+```{r,message=FALSE}
+bwt_data = read_csv("data/birthweight.csv")
+```
 
 
-
+Cleaning data
+```{r}
+bwt_data = bwt_data |>
+  mutate(
+    babysex = factor(babysex, labels = c("male", "female")),
+    malform = factor(malform, labels = c("absent", "present")),
+    frace = factor(frace,
+                   labels = c("White", "Black", "Asian", "Puerto Rican", 
+                              "Other")),
+    mrace = factor(mrace,
+                   labels = c("White", "Black", "Asian", "Puerto Rican")),
+  ) |>
+  drop_na()
+```
 
 
 
