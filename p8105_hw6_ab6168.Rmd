@@ -7,18 +7,20 @@ output: github_document
 
 ```{r}
 library(tidyverse)
+library(modelr)
 library(broom)
 ```
-
 
 ## Problem 1
 
 Reading in data
+
 ```{r}
 homicide_data = read_csv("data/homicide-data.csv")
 ```
 
 Data cleaning
+
 ```{r}
 homicide_data = homicide_data |> 
   #creating city_state variable and binary variable for solved/unsolved homicides
@@ -35,8 +37,8 @@ homicide_data = homicide_data |>
   mutate(victim_age = suppressWarnings(as.numeric(victim_age)))
 ```
 
-
 Fitting logistic regression for Baltimore, MD
+
 ```{r}
 baltimore_data = homicide_data |> 
   filter(city_state == "Baltimore, MD")
@@ -55,8 +57,8 @@ tidy_fit |>
   filter(term == "victim_sexMale")
 ```
 
-
 Iterating for all cities
+
 ```{r, warning=FALSE}
 city_or_results = homicide_data |> 
   group_by(city_state) |> 
@@ -80,8 +82,8 @@ city_or_results = homicide_data |>
   select(city_state, estimate, conf.low, conf.high)
 ```
 
-
 Creating plot
+
 ```{r}
 city_or_results = city_or_results |> 
   #reordering cities by OR
@@ -100,6 +102,102 @@ ggplot(city_or_results,
   ) +
   theme_minimal(base_size = 12)
 ```
+
+**Comments:**
+
+The plot shows variation across cities in the adjusted odds ratio. In most cities, the odds ratios are below 1 indicating that homicides involving male victims are less likely to be solved than those involving female victims when adjusting for age and race. A few cities have an odds ratio closer to or above 1 showing an increase in odds for male victims. Some estimates have wide confidence intervals signifying uncertainty in the estimate.
+
+## Problem 2
+
+```{r}
+library(p8105.datasets)
+data("weather_df")
+```
+
+Bootstrapping
+
+```{r}
+bootstrap_results = 
+  weather_df |>
+  modelr::bootstrap(5000) |>
+  mutate(
+    model = map(strap, \(df) lm(tmax ~ tmin + prcp, data = df)),
+    
+    results = map(model, \(fit) {
+      coefs = tidy(fit)
+      tibble(
+        r2 = glance(fit)$r.squared,
+        ratio = coefs$estimate[coefs$term == "tmin"] /
+          coefs$estimate[coefs$term == "prcp"]
+      )
+    })
+  ) |>
+  select(.id, results) |>
+  unnest(results)
+
+```
+
+Plotting distribution of estimates
+
+```{r}
+#plot of r^2
+bootstrap_results |>
+  ggplot(aes(x = r2)) +
+  geom_density(fill = "aquamarine3", alpha = 0.4) +
+  theme_minimal() +
+  labs(
+    title = "Bootstrap Distribution of R-squared",
+    x = "R-squared"
+  )
+```
+
+**Comments:**
+
+The bootstrap distribution of R^2^ is approximately unimodal, with most of the density concentrated between about 0.935 and 0.945. The shape is more symmetric and does not have heavy tails, showing that the estimate of R^2^ is stable across bootstrap samples. The variability across samples is small.
+
+```{r}
+#plot of beta1/beta2
+bootstrap_results |>
+  ggplot(aes(x = ratio)) +
+  geom_density(fill = "coral3", alpha = 0.4) +
+  theme_minimal() +
+  labs(
+    title = "Bootstrap Distribution of beta1 / beta2",
+    x = "beta1 / beta2"
+  )
+```
+
+**Comments:**
+
+The bootstrap distribution of $\beta$ ~1~ **/**$\beta$ ~2~is wide and strongly left-skewed. This shows that the ratio of the `tmin` effect to the `prcp` effect varies across bootstrap samples. The coefficient for `prcp` is small so variations in $\beta$ ~2~ can cause the ratio to change greatly.
+
+
+
+Computing 95% confidence intervals
+```{r}
+bootstrap_results |>
+  pivot_longer(cols = c(r2, ratio), names_to = "term", values_to = "estimate") |>
+  group_by(term) |>
+  summarize(
+    ci_lower = quantile(estimate, 0.025),
+    ci_upper = quantile(estimate, 0.975)
+  )
+```
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
