@@ -219,6 +219,28 @@ model_bwt =
 summary(model_bwt)
 ```
 
+Adding predictions and residuals
+```{r}
+bwt_data = bwt_data |>
+  add_predictions(model_bwt) |>
+  add_residuals(model_bwt)
+```
+
+
+Plotting residuals vs. fitted
+```{r}
+bwt_data |>
+  ggplot(aes(x = pred, y = resid)) +
+  geom_point(alpha = 0.4) +
+  geom_hline(yintercept = 0, linetype = "dashed") +
+  theme_minimal() +
+  labs(
+    title = "Residuals vs Fitted Values",
+    x = "Fitted Values",
+    y = "Residuals"
+  )
+```
+
 
 
 
